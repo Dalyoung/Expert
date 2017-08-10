@@ -1,0 +1,132 @@
+--main
+
+#include <iostream>
+#include <stdlib.h>
+
+using namespace std;
+
+struct item {
+	float pos;
+	float val;
+};
+
+static item data1[1000000];
+
+extern int test(item data[], int max);
+
+const int MAX = 1000000;
+
+int main() {
+	srand(55);
+	int weight = 100;
+	for (int t = 1; t <= 50; ++t) {
+		int result = 0;
+		for (int repeat = 1; repeat <= 5; ++repeat) {
+			for (int i = 0; i < weight; i++) {
+				data1[i].pos = (float)((rand() % 20000) - 10000.0 + (rand() % 10000) / 10000.0);
+				data1[i].val = (float)((rand() % 20000) - 10000.0 + (rand() % 10000) / 10000.0);
+			}
+			result += test(data1, weight);
+		}
+
+		weight = (int)(weight * 1.25);
+		if (weight > MAX) {
+			weight = MAX;
+		}
+
+		cout << "#" << t << " " << result << endl;
+	}
+}
+
+-- user
+struct item {
+	float pos;
+	float val;
+};
+
+
+int test(item data[], int max) {
+	static bool flag[1000000];
+
+	for (register int cntr = 0; cntr < max; cntr++) {
+		flag[cntr] = true;
+	}
+
+	float result = 0.0;
+
+	for (register int cntr1 = 0; cntr1 < max; cntr1++) {
+		int index;
+		float minpos = 100000.0;
+		float minval;
+
+		for (register int cntr2 = 0; cntr2 < max; cntr2++) {
+			if (data[cntr2].pos <= minpos && flag[cntr2] == true) {
+				minpos = data[cntr2].pos;
+				index = cntr2;
+			}
+		}
+
+		flag[index] = false;
+		minval = data[index].val;
+
+		if (cntr1 % 2 == 0)
+			result += minval;
+		else
+			result -= minval;
+	}
+
+	return (int)result;
+}
+
+
+-- out
+#1 -60263
+#2 -280041
+#3 257486
+#4 -57228
+#5 84649
+#6 -190845
+#7 -631869
+#8 10012
+#9 578560
+#10 -394794
+#11 431704
+#12 77316
+#13 33826
+#14 326630
+#15 -276073
+#16 -447530
+#17 -349755
+#18 989863
+#19 37726
+#20 -567389
+#21 1640694
+#22 884978
+#23 379857
+#24 -1801701
+#25 1352551
+#26 811243
+#27 1936161
+#28 3344338
+#29 -2851508
+#30 1861972
+#31 -474406
+#32 3456095
+#33 2990617
+#34 -3447895
+#35 -4246594
+#36 -13496888
+#37 -4391646
+#38 2110132
+#39 4806887
+#40 5171023
+#41 -5426460
+#42 3113042
+#43 16211609
+#44 5017404
+#45 14527044
+#46 -5595096
+#47 5753469
+#48 -3513576
+#49 -25462245
+#50 7592696
