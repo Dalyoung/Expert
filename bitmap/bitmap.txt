@@ -1,0 +1,129 @@
+-- main
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+extern void encode(unsigned char bitmap[256][32], unsigned char data[4096]);
+extern void decode(unsigned char data[4096], unsigned char bitmap[256][32]);
+
+unsigned char getpixel(unsigned char bitmap[256][32], int r, int c) {
+	unsigned char mask = 0x80 >> (c % 8);
+	if ((bitmap[r][c / 8] & mask) == mask)	return 1;
+	else return 0;
+}
+
+void setpixel(unsigned char bitmap[256][32], int r, int c, unsigned char bit) {
+	unsigned char mask = 0x80 >> (c % 8);
+	if (bit == 0) bitmap[r][c / 8] &= ~mask;
+	else bitmap[r][c / 8] |= mask;
+}
+
+void noise(unsigned char bitmap[256][32]) {
+	for (register int r = 0; r < 256; r += 2) {
+		for (register int c = 0; c < 256; c += 2) {
+			setpixel(bitmap, r + rand() % 2, c + rand() % 2, 0);
+			setpixel(bitmap, r + rand() % 2, c + rand() % 2, 1);
+		}
+	}
+}
+
+void rotate(unsigned char bitmap[256][32], int mode) {
+	unsigned char buff[256][32];
+	memcpy(buff, bitmap, sizeof(bitmap));
+
+	switch (mode) {
+	case 1: // 90
+		for (register int i = 0; i < 256; i++)
+			for (register int j = 0; j < 256; j++)
+				setpixel(bitmap, i, j, getpixel(buff, 255 - j, i));
+		break;
+	case 2: // 180
+		for (register int i = 0; i < 256; i++)
+			for (register int j = 0; j < 256; j++)
+				setpixel(bitmap, i, j, getpixel(buff, 255 - i, 255 - j));
+		break;
+	case 3: // 270
+		for (register int i = 0; i < 256; i++)
+			for (register int j = 0; j < 256; j++)
+				setpixel(bitmap, i, j, getpixel(buff, j, 255 - i));
+		break;
+	default:
+		break;
+	}
+}
+
+void flip(unsigned char bitmap[256][32], int mode)
+{
+	unsigned char buff[256][32];
+	memcpy(buff, bitmap, sizeof(bitmap));
+
+	switch (mode) {
+	case 1: // Horizontal
+		for (register int i = 0; i < 256; i++)
+			for (register int j = 0; j < 256; j++)
+				setpixel(bitmap, i, j, getpixel(buff, 255 - i, j));
+		break;
+	case 2: // Vertical
+		for (register int i = 0; i < 256; i++)
+			for (register int j = 0; j < 256; j++)
+				setpixel(bitmap, i, j, getpixel(buff, i, 255 - j));
+		break;
+	default: // 0
+		break;
+	}
+
+}
+
+int main() {
+	srand(3); // 변경 가능
+
+	const int TCASE = 1024;
+
+	static unsigned char bitmap[TCASE][256][32];
+	static unsigned char data[TCASE][4096];
+	static unsigned char org[TCASE][4096];
+	static unsigned char result[TCASE][4096];
+
+	for (register int t = 0; t < TCASE; t++) {
+		for (register int i = 0; i < 4096; i++) {
+			org[t][i] = data[t][i] = rand() % 15;
+		}
+	}
+
+	int PERFORMANCE = 10000;
+	int answer_cnt = 0;
+
+	clock_t s = clock();
+	for (register int t = 0; t < TCASE; t++) {
+		encode(bitmap[t], data[t]);
+	}
+	PERFORMANCE -= (clock() - s);
+
+	for (register int t = 0; t < TCASE; t++) {
+		noise(bitmap[t]);
+		rotate(bitmap[t], rand() % 4);
+		flip(bitmap[t], rand() % 3);
+	}
+
+	s = clock();
+	for (register int t = 0; t < TCASE; t++) {
+		decode(result[t], bitmap[t]);
+	}
+	PERFORMANCE -= (clock() - s);
+
+	for (register int t = 0; t < TCASE; t++) {
+		if (memcmp(&org[t][0], &result[t][0], 4096) == 0) answer_cnt++;
+	}
+
+	printf("SCORE : %d\n", answer_cnt * 10000 + PERFORMANCE);
+}
+
+
+--user
+void encode(unsigned char bitmap[256][32], unsigned char data[4096]) {
+
+}
+void decode(unsigned char data[4096], unsigned char bitmap[256][32]) {
+
+}
