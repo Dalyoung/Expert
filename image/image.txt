@@ -1,0 +1,97 @@
+---- main
+
+#include <iostream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+using namespace std;
+
+const int BLOCK = 32;
+const int X = 2048;
+const int Y = 2048;
+
+static char bitmap[Y][X];
+static char bitmap_org[Y][X];
+
+extern void test(char bitmap[][X]);
+
+static void rect(int sx, int sy, int ex, int ey) {
+	memset(&bitmap[sy][sx], 1, ex - sx + 1);
+	memset(&bitmap[ey][sx], 1, ex - sx + 1);
+	for (int i = sy + 1; i < ey; i++) {
+		bitmap[i][sx] = 1;
+		bitmap[i][ex] = 1;
+	}
+}
+
+static void swap(int sx, int sy, int dx, int dy) {
+	for (int y = 0; y < BLOCK; y++) {
+		for (int x = 0; x < BLOCK; x++) {
+			register int t = bitmap[sy + y][sx + x];
+			bitmap[sy + y][sx + x] = bitmap[dy + y][dx + x];
+			bitmap[dy + y][dx + x] = t;
+		}
+	}
+}
+
+static void build() {
+	int sx, sy, ex, ey;
+
+	memset(bitmap, 0, sizeof bitmap);
+	memset(bitmap_org, 0, sizeof bitmap_org);
+
+	for (int c = 0; c < 100; c++) {
+		do { sx = rand() % (X - BLOCK); } while (sx % BLOCK == 0 || sx % BLOCK == BLOCK - 1);
+		do { sy = rand() % (Y - BLOCK); } while (sy % BLOCK == 0 || sy % BLOCK == BLOCK - 1);
+		do { ex = rand() % (X - BLOCK - sx) + (sx + BLOCK); } while (ex % BLOCK == 0 || ex % BLOCK == BLOCK - 1);
+		do { ey = rand() % (Y - BLOCK - sy) + (sy + BLOCK); } while (ey % BLOCK == 0 || ey % BLOCK == BLOCK - 1);
+
+		rect(sx, sy, ex, ey);
+	}
+
+	memcpy(bitmap_org, bitmap, sizeof bitmap);
+
+	for (int c = 0; c < 100; c++) {
+		sx = (rand() % X / BLOCK) * BLOCK;
+		sy = (rand() % Y / BLOCK) * BLOCK;
+		ex = (rand() % X / BLOCK) * BLOCK;
+		ey = (rand() % Y / BLOCK) * BLOCK;
+		if (sx == ex && sy == ey) { c--; continue; }
+
+		swap(sx, sy, ex, ey);
+	}
+}
+
+static bool check() {
+	if (memcmp(bitmap, bitmap_org, sizeof bitmap)) return false;
+	return true;
+}
+
+int main() {
+	int SCORE = 0;
+	int count = 0;
+
+	srand(3);
+
+	while (true) {
+		build();
+		test(bitmap);
+		if (check()) SCORE++;
+		cout << "#" << ++count << " " << SCORE << endl;
+	}
+
+
+	return 0;
+}
+
+
+---- user
+
+const int BLOCK = 32;
+const int X = 2048;
+const int Y = 2048;
+
+void test(char bitmap[][X]) {
+
+}
