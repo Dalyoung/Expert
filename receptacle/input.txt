@@ -1,0 +1,73 @@
+---- main
+#include <stdlib.h>
+#include <stdio.h>
+#include <time.h>
+
+void process(int room[][10000]);
+
+int main()
+{
+	srand(5);
+	static int org[10000][10000];
+	static int room[10000][10000];
+	int shelter[10000][3];
+
+	for (int i = 0; i < 10000; i++)
+	{
+		for (int j = 0; j < 10000; j++)
+		{
+			org[i][j] = room[i][j] = rand() % 9 + 1;
+		}
+
+		for (int j = 0; j < 3; j++)
+		{
+			int idx = rand() % 10000;
+			while (room[i][idx] == 0)idx = rand() % 10000;
+			org[i][idx] = room[i][idx] = 0;
+			shelter[i][j] = idx;
+		}
+	}
+
+	long long int start = clock();
+	process(room);
+	long long int Performance = clock() - start;
+	long long int Penalty = 0;
+
+	for (int i = 0; i < 10000; i++)
+	{
+		int sum[3] = { 0,0,0 };
+		for (int j = 0; j < 10000; j++)
+		{
+			int flag = 0;
+			for (int k = 0; k < 3; k++)
+			{
+				if (room[i][j] == shelter[i][k])
+				{
+					sum[k] += org[i][j];
+					if (sum[k] > 20000) Penalty += 10000;
+					else Penalty += (long long int)abs(j - room[i][j]);
+					flag = 1;
+					break;
+				}
+			}
+			if (flag == 0) Penalty += 10000;
+		}
+	}
+
+	printf("Penalty %.6lf Performance %lld\n", (double)Penalty / 10000.0 / 10000.0, Performance);
+	return 0;
+}
+
+
+---- user
+void process(int room[][10000])
+{
+	int shelter[3];
+	int k;
+	for (int i = 0; i < 10000; i++)
+	{
+		k = 0;
+		for (int j = 0; j < 10000; j++) if (room[i][j] == 0) shelter[k++] = j;
+		for (int j = 0; j < 10000; j++) room[i][j] = shelter[j % 3];
+	}
+}
